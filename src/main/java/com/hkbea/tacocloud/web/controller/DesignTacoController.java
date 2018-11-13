@@ -3,11 +3,15 @@ package com.hkbea.tacocloud.web.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -21,9 +25,8 @@ public class DesignTacoController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DesignTacoController.class);
 	
-	@GetMapping
-	public String showDesignForm(Model model) {
-		LOGGER.info("start deal /design request");
+	@ModelAttribute
+	public void addIngredientsToModel(Model model) {
 		List<Ingredient> ingredients = new ArrayList<Ingredient>();
 		ingredients.add(new Ingredient("FLTO", "Flour Tortilla", Type.WRAP));
 		ingredients.add(new Ingredient("COTO", "Corn Tortilla", Type.WRAP));
@@ -40,15 +43,32 @@ public class DesignTacoController {
 		for(Type type:types) {
 			model.addAttribute(type.toString().toLowerCase(), filterByType(ingredients, type));
 		}
+	}
+	
+	@GetMapping
+	public String showDesignForm(Model model) {
+		LOGGER.info("start deal /design request");
+		
 		model.addAttribute("design", new Taco());
 		LOGGER.info("end deal /design request");
 		return "design";
 	}
 	
+	/**
+	 * 
+	 * @param design 如果不使用@ModelAttribute注解指定名称,则默认将类名(首字母小写)当作名称,
+	   *                                              与design.html页面th:object="${design}"指定的名称对应不上
+	 * @param errors
+	 * @return
+	 */
 	@PostMapping
-	public String processDesign(Taco taco)
+	public String processDesign(@Valid @ModelAttribute(value = "design") Taco design, Errors errors)
 	{
-		LOGGER.info("Processing Desing: " + taco);
+		if(errors.hasErrors())
+		{
+			return "design";
+		}
+		LOGGER.info("Processing Desing: " + design);
 		return "redirect:/orders/current";
 	}
 	
