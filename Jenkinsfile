@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                bat 'mvn --version'
+                bat 'mvn clean compile package -Dmaven.test.skip=true -Dmaven.compile.fork=true'
             }
         }
     }
